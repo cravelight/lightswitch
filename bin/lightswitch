@@ -1,4 +1,4 @@
 #!/usr/bin/env php
 <?php
 
-include('lightswitch_bootstrapper.php');
+echo "lightswitch was here \n";
