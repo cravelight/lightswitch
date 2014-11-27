@@ -1,4 +1,5 @@
 #!/usr/bin/env php
 <?php
 
-echo "lightswitch was here \n";
+echo "lightswitch was here again \n";
+// comment....
