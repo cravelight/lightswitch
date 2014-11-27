@@ -1,0 +1,25 @@
+{
+    "name": "cravelight/lightswitch",
+	"type": "library",
+	"description": "Basic migration support for Illuminate outside of Laravel",
+	"keywords": ["Illuminate", "migration"],
+	"homepage": "https://github.com/cravelight/lightswitch",
+	"license": "MIT",
+	"authors": [{
+	  "name": "Mark Gidman",
+	  "email": "cravelight@gmail.com",
+	  "homepage": "https://github.com/cravelight"
+	}],
+	"require": {
+		"illuminate/database": "4.2.*@dev"
+	},
+	"bin": [
+		"bin/lightswitch", 
+		"bin/lightswitch_bootstrapper"
+	],
+    "autoload": {
+        "psr-4" : {
+            "Cravelight\\Lightswitch\\" : "src/"
+        }
+    }
+}
