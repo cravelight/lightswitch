@@ -15,7 +15,7 @@
 	},
 	"bin": [
 		"bin/lightswitch", 
-		"bin/lightswitch_bootstrapper"
+		"bin/lightswitch_bootstrapper.php"
 	],
     "autoload": {
         "psr-4" : {
