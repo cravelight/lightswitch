@@ -17,7 +17,7 @@ class Lightswitch
     private $argc;
 
     /**
-     * @var Illuminate\Database\Capsule\Manager
+     * @var \Illuminate\Database\Capsule\Manager
      */
     private $db;
 
@@ -49,7 +49,7 @@ class Lightswitch
      * @param Illuminate\Database\Capsule\Manager $db Illuminate database manager instance
      * See Lightswitch::getDefaultConfig for settings which can be overridden.
      */
-    public function __construct(Illuminate\Database\Capsule\Manager $db)
+    public function __construct(\Illuminate\Database\Capsule\Manager $db)
     {
         global $argv, $argc;
         $this->argv = $argv;

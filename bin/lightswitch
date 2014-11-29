@@ -2,6 +2,7 @@
 <?php
 
 use Cravelight\Lightswitch\Lightswitch as Lightswitch;
+use Illuminate\Database\Capsule\Manager;
 
 $bin = dirname(__FILE__);
 $lightswitch = dirname($bin);
