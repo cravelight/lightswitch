@@ -1,5 +1,8 @@
 <?php
 
+use Carbon\Carbon;
+use Illuminate\Database\Capsule\Manager;
+
 /**
  * Lightweight utility for managing database migrations and seeding.
  *
@@ -8,15 +11,8 @@
  */
 class Lightswitch
 {
-    /**
-     * @var array
-     */
-    private $args;
-    
-    /**
-     * @var array
-     */
-    private $cfg;
+    private $argv;
+    private $argc;
 
     /**
      * @var Illuminate\Database\Capsule\Manager
@@ -24,64 +20,96 @@ class Lightswitch
     private $db;
 
     /**
-     * @var array
-     */
-    private $history;
-
-    /**
      * @var timestamp The default value used to init the history
      */
     private $defaultTimestamp = 342144000;
 
-    
+    /**
+     * @var array
+     */
+    private $history;
+    private $historyFilePath;
+
+    private $migrationsPath;
+    private $migrPrefix;
+    private $migrSuffix;
+
+    private $seedsPath;
+    private $seedPrefix;
+    private $seedSuffix;
+
+    private $templatesPath;
 
 
-
-    public function __construct(Illuminate\Database\Capsule\Manager $db, array $config, $args)
-    {
-        $this->db = $db;
-        $this->cfg = array_merge(static::getDefaultConfig(), $config);
-        $this->args = $args;
-        $this->loadHistory();
-    }
 
 
     /**
-     * Get default configuration values
-     * @return array
+     * @param Illuminate\Database\Capsule\Manager $db Illuminate database manager instance
+     * See Lightswitch::getDefaultConfig for settings which can be overridden.
      */
-    public static function getDefaultConfig()
+    public function __construct(Illuminate\Database\Capsule\Manager $db)
     {
-// define("SITEROOT", dirname(__FILE__) . '/');
-// define("MIGRATIONS", SITEROOT."sql/migrations/");
-// define("SEEDS", SITEROOT."sql/seeds/");
-// define("TEMPLATES", SITEROOT."sql/templates/");
-// define("HISTORY_FILE", SITEROOT."sql/history.json");
+        global $argv, $argc;
+        $this->argv = $argv;
+        $this->argc = $argc;
+        $this->db = $db;
 
-// define("MIGR_PREFIX", "migr_");
-// define("SEED_PREFIX", "seed_");
-// define("MIGR_SUFFIX", "_");
-// define("SEED_SUFFIX", "_");
+        $sqlPath = realpath($this->getVendorParentPath() . '/sql');
+        $this->historyFilePath = realpath($sqlPath . '/history.json');
+        $this->migrationsPath = realpath($sqlPath . '/migrations');
+        $this->migrPrefix = 'migr_';
+        $this->migrSuffix = '_';
+        $this->seedsPath = realpath($sqlPath . '/seeds');
+        $this->seedPrefix = 'seed_';
+        $this->seedSuffix = '_';
+        $this->templatesPath = realpath($sqlPath . '/templates');
 
-        return array(
-        	// 
-        	'sqlroot' => '',
-        	'migrations.' => '',
-        	'' => '',
-        	'' => '',
-        	'' => '',
-        	'' => '',
-        	'' => '',
-        	'' => ''
-        );
+        $this->initPaths();
+        $this->initTemplates();
+        $this->loadHistory();
     }
 
+    private function getVendorParentPath()
+    {
+        // yeah, we could use relative .. stuff, but this makes it obvious
+        $src = dirname(__FILE__);
+        $lightswitch = dirname($src);
+        $cravelight = dirname($lightswitch);
+        $vendor = dirname($cravelight);
+        $parent = dirname($vendor);
+        return realpath($parent);
+    }
 
-    
+    private function initPaths()
+    {
+        $paths = array(
+            $this->migrationsPath,
+            $this->seedsPath,
+            $this->templatesPath
+        );
+        foreach ($paths as $path) {
+            if (!is_dir($path)) {
+                mkdir($path, 0777, true);
+            }
+        }
+    }
+
+    private function initTemplates()
+    {
+        $templates = array('seed.php', 'migration.php');
+        foreach ($templates as $template) {
+            $target = realpath($this->templatesPath) . '/' . $template;
+            if (!file_exists($target)){
+                $source = realpath(dirname(__FILE__)) . '/templates/' . $template;
+                copy($source, $target);
+            }
+        }
+    }
+
     private function loadHistory()
     {
         //todo: someday let's validate the contents if it does exist
-        if (!file_exists(HISTORY_FILE)) {
+        if (!file_exists($this->historyFilePath)) {
             $this->history = array(
                 'appliedMigrations' => array(), 
                 'lastMigration' => $this->defaultTimestamp,
@@ -94,7 +122,7 @@ class Lightswitch
                 );
             $this->saveHistory();
         }
-       $this->history = json_decode(file_get_contents(HISTORY_FILE));
+       $this->history = json_decode(file_get_contents($this->historyFilePath));
     }
 
     private function initSeedGroupHistory($group)
@@ -110,7 +138,7 @@ class Lightswitch
 
     private function saveHistory()
     {
-        file_put_contents(HISTORY_FILE, json_encode($this->history, JSON_PRETTY_PRINT));
+        file_put_contents($this->historyFilePath, json_encode($this->history, JSON_PRETTY_PRINT));
     }
 
 
@@ -120,7 +148,7 @@ class Lightswitch
             echo "\n";
             echo "Oops! Try something like this...\n";
         }
-        $mefile = $this->args[0];
+        $mefile = $this->argv[0];
         echo "\n";
         echo "/ - - - - - - - - - - - - - - - - - - - - - - - - -\n";
         echo "| Lightswitch Usage \n";
@@ -154,15 +182,14 @@ class Lightswitch
     public function exec()
     {
         // remember, first arg is the name of the currently executing file
-        $argCount = count($this->args);
 
-        if ($argCount < 2 || $argCount > 4) {
+        if ($this->argc < 2 || $this->argc > 4) {
             $this->help(true);
             return;
         }
 
-        if ($argCount == 2) {
-            switch ($this->args[1]) {
+        if ($this->argc == 2) {
+            switch ($this->argv[1]) {
                 case "migrate":
                     $this->runMigrations();
                     break;
@@ -180,26 +207,26 @@ class Lightswitch
         }
 
         // handle running of named seed group
-        if ($this->args[1] == 'seed') {
-            $this->runSeeds($this->args[2]);
+        if ($this->argv[1] == 'seed') {
+            $this->runSeeds($this->argv[2]);
             return;
         }
 
-        if ($this->args[1] != 'new') {
+        if ($this->argv[1] != 'new') {
             $this->help(true);
             return;
         }
 
-        if ($this->args[2] != 'migration' && $this->args[2] != 'seed') {
+        if ($this->argv[2] != 'migration' && $this->argv[2] != 'seed') {
             $this->help(true);
             return;
         }
 
-        $name = isset($this->args[3])
-            ? $this->args[3]
+        $name = isset($this->argv[3])
+            ? $this->argv[3]
             : '';
             
-        switch ($this->args[2]) {
+        switch ($this->argv[2]) {
             case "migration":
                 $this->newMigration($name);
                 break;
@@ -213,11 +240,11 @@ class Lightswitch
     private function newMigration($name)
     {
         $cleanName = $this->getCleanName($name);
-        $classname = MIGR_PREFIX.time().MIGR_SUFFIX.$cleanName;
+        $classname = $this->migrPrefix . time() . $this->migrSuffix . $cleanName;
         $filename = $classname.'.php';
-        $filepath = MIGRATIONS.$filename;
+        $filepath = $this->migrationsPath . '/' . $filename;
 
-        $template = file_get_contents(TEMPLATES.'migration.php');
+        $template = file_get_contents($this->templatesPath . '/migration.php');
         $content = str_replace('{{classname}}', $classname, $template);
         file_put_contents($filepath, $content);
         echo "New migration created at: $filepath \n";
@@ -227,11 +254,11 @@ class Lightswitch
     private function newSeed($name)
     {
         $cleanName = $this->getCleanName($name);
-        $classname = SEED_PREFIX.time().SEED_SUFFIX.$cleanName;
+        $classname = $this->seedPrefix . time() .$this->seedSuffix . $cleanName;
         $filename = $classname.'.php';
-        $filepath = SEEDS.$filename;
+        $filepath = $this->seedsPath . '/' . $filename;
 
-        $template = file_get_contents(TEMPLATES.'seed.php');
+        $template = file_get_contents($this->templatesPath . '/seed.php');
         $content = str_replace('{{classname}}', $classname, $template);
         file_put_contents($filepath, $content);
         echo "New seed created at: $filepath \n";
@@ -247,13 +274,12 @@ class Lightswitch
         echo "/ - - - - - - - - - - - - - - - - - - - - - - - - -\n";
         echo "| Lightswitch Status  \n";
         echo "| Database: $dbname \n";
-        echo "| Reporting Timezone: ".REPORTING_TIMEZONE." \n";
         echo "| - - - - - - - - - - - - - - - - - - - - - - - - -\n";
         echo "| \n";
         echo "| - Completed Migrations - - - - -\n";
         if ($hasMigratedBefore) {
             foreach ($this->history->appliedMigrations as $migration) {
-                $ranOnAsDateTimeString = Carbon::createFromTimeStamp($migration->ranOn, REPORTING_TIMEZONE)->toDateTimeString();
+                $ranOnAsDateTimeString = Carbon::createFromTimeStamp($migration->ranOn)->toDateTimeString();
                 echo "| $ranOnAsDateTimeString $migration->class \n";
             }
         } else {
@@ -278,7 +304,7 @@ class Lightswitch
             echo "| - $groupName Seeds - - - - -\n";
             if ($hasSeededBefore) {
                 foreach ($groupHistory->appliedSeeds as $seed) {
-                    $ranOnAsDateTimeString = Carbon::createFromTimeStamp($seed->ranOn, REPORTING_TIMEZONE)->toDateTimeString();
+                    $ranOnAsDateTimeString = Carbon::createFromTimeStamp($seed->ranOn)->toDateTimeString();
                     echo "| $ranOnAsDateTimeString $seed->class \n";
                 }
             } else {
@@ -370,7 +396,7 @@ class Lightswitch
 
     private function getMigrationsNotYetRun()
     {
-        $files = glob(MIGRATIONS.'*.php');
+        $files = glob($this->migrationsPath . '/*.php');
         $notRun = array_filter($files, function($file) //use($NUM)
             {
                 $className = $this->getClassNameFromFilePath($file);
@@ -382,7 +408,7 @@ class Lightswitch
 
     private function getSeedsNotYetRunForGroup($group)
     {
-        $files = glob(SEEDS.$group.'/*.php');
+        $files = glob($this->seedsPath . '/' . $group . '/*.php');
         $seedGroupHistory = $this->history->seedGroups->$group;
         $notRun = array_filter($files, function($file) use($seedGroupHistory)
             {
