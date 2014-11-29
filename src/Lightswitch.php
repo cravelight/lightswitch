@@ -1,6 +1,6 @@
 <?php
 
-namespace Cravelight;
+namespace Cravelight\Lightswitch;
 
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager;
