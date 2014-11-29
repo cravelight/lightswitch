@@ -26,5 +26,5 @@ if (!defined('AUTOLOAD_PATH')) {
 require AUTOLOAD_PATH;
 
 
-$lightswitch = new Lightswitch($app->db, $argv);
+$lightswitch = new Lightswitch();//$app->db, $argv);
 $lightswitch->exec();

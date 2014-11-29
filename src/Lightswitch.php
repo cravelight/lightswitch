@@ -49,12 +49,14 @@ class Lightswitch
      * @param Illuminate\Database\Capsule\Manager $db Illuminate database manager instance
      * See Lightswitch::getDefaultConfig for settings which can be overridden.
      */
-    public function __construct(\Illuminate\Database\Capsule\Manager $db)
+    //public function __construct(\Illuminate\Database\Capsule\Manager $db)
+    public function __construct()
     {
         global $argv, $argc;
         $this->argv = $argv;
         $this->argc = $argc;
-        $this->db = $db;
+        //todo: pass the connection name on the command line?
+        //$this->db = $db;
 
         $sqlPath = realpath($this->getVendorParentPath() . '/sql');
         $this->historyFilePath = realpath($sqlPath . '/history.json');
