@@ -1,5 +1,7 @@
 <?php
 
+namespace Cravelight;
+
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager;
 
@@ -145,37 +147,37 @@ class Lightswitch
     private function help($oops = false)
     {
         if ($oops) {
-            echo "\n";
-            echo "Oops! Try something like this...\n";
+            echo "" . PHP_EOL;
+            echo "Oops! Try something like this..." . PHP_EOL;
         }
         $mefile = $this->argv[0];
-        echo "\n";
-        echo "/ - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "| Lightswitch Usage \n";
-        echo "| - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "| \n";
-        echo "| Run all MIGRATIONS that haven't been run \n";
-        echo "|   php $mefile migrate \n";
-        echo "| \n";
-        echo "| Run all SEEDS that haven't been run in the default seed group \n";
-        echo "|   php $mefile seed \n";
-        echo "| \n";
-        echo "| Run all SEEDS that haven't been run in the given seed group \n";
-        echo "|   php $mefile seed seedGroup \n";
-        echo "| \n";
-        echo "| Display the STATUS of all migrations and seeds \n";
-        echo "|   php $mefile status \n";
-        echo "| \n";
-        echo "| - Design time helpers - - - - -\n";
-        echo "| \n";
-        echo "| Create a new migration file. \n";
-        echo "|   php $mefile new migration [name]\n";
-        echo "| \n";
-        echo "| Create a new seed file. \n";
-        echo "|   php $mefile new seed [name]\n";
-        echo "| \n";
-        echo "\ - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "\n";
+        echo PHP_EOL;
+        echo "/ - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "| Lightswitch Usage " . PHP_EOL;
+        echo "| - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| Run all MIGRATIONS that haven't been run " . PHP_EOL;
+        echo "|   php $mefile migrate " . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| Run all SEEDS that haven't been run in the default seed group " . PHP_EOL;
+        echo "|   php $mefile seed " . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| Run all SEEDS that haven't been run in the given seed group " . PHP_EOL;
+        echo "|   php $mefile seed seedGroup " . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| Display the STATUS of all migrations and seeds " . PHP_EOL;
+        echo "|   php $mefile status " . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| - Design time helpers - - - - -" . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| Create a new migration file. " . PHP_EOL;
+        echo "|   php $mefile new migration [name]" . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| Create a new seed file. " . PHP_EOL;
+        echo "|   php $mefile new seed [name]" . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "\ - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "" . PHP_EOL;
     }
 
 
@@ -247,7 +249,7 @@ class Lightswitch
         $template = file_get_contents($this->templatesPath . '/migration.php');
         $content = str_replace('{{classname}}', $classname, $template);
         file_put_contents($filepath, $content);
-        echo "New migration created at: $filepath \n";
+        echo "New migration created at: $filepath " . PHP_EOL;
     }
 
 
@@ -261,7 +263,7 @@ class Lightswitch
         $template = file_get_contents($this->templatesPath . '/seed.php');
         $content = str_replace('{{classname}}', $classname, $template);
         file_put_contents($filepath, $content);
-        echo "New seed created at: $filepath \n";
+        echo "New seed created at: $filepath " . PHP_EOL;
     }
 
 
@@ -270,50 +272,50 @@ class Lightswitch
         $dbname = $this->db->getConnection()->getDatabaseName();
         $hasMigratedBefore = $this->history->lastMigration != $this->defaultTimestamp;
 
-        echo "\n";
-        echo "/ - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "| Lightswitch Status  \n";
-        echo "| Database: $dbname \n";
-        echo "| - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "| \n";
-        echo "| - Completed Migrations - - - - -\n";
+        echo "" . PHP_EOL;
+        echo "/ - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "| Lightswitch Status  " . PHP_EOL;
+        echo "| Database: $dbname " . PHP_EOL;
+        echo "| - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "| " . PHP_EOL;
+        echo "| - Completed Migrations - - - - -" . PHP_EOL;
         if ($hasMigratedBefore) {
             foreach ($this->history->appliedMigrations as $migration) {
                 $ranOnAsDateTimeString = Carbon::createFromTimeStamp($migration->ranOn)->toDateTimeString();
-                echo "| $ranOnAsDateTimeString $migration->class \n";
+                echo "| $ranOnAsDateTimeString $migration->class " . PHP_EOL;
             }
         } else {
-            echo "| No migrations have been run against this database. \n";
+            echo "| No migrations have been run against this database. " . PHP_EOL;
         }
-        echo "| \n";
-        echo "| - Open Migrations - - - - -\n";
+        echo "| " . PHP_EOL;
+        echo "| - Open Migrations - - - - -" . PHP_EOL;
         $openMigrations = $this->getMigrationsNotYetRun();
         if (count($openMigrations) > 0) {
             foreach ($openMigrations as $migration) {
                 $className = $this->getClassNameFromFilePath($migration);
-                echo "| $className \n";
+                echo "| $className " . PHP_EOL;
             }
         } else {
-            echo "| All migrations have been run against this database. \n";
+            echo "| All migrations have been run against this database. " . PHP_EOL;
         }
-        echo "| \n";
-        echo "| - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "| \n";
+        echo "| " . PHP_EOL;
+        echo "| - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "| " . PHP_EOL;
         foreach ($this->history->seedGroups as $groupName => $groupHistory) {
             $hasSeededBefore = $groupHistory->lastSeed != $this->defaultTimestamp;
-            echo "| - $groupName Seeds - - - - -\n";
+            echo "| - $groupName Seeds - - - - -" . PHP_EOL;
             if ($hasSeededBefore) {
                 foreach ($groupHistory->appliedSeeds as $seed) {
                     $ranOnAsDateTimeString = Carbon::createFromTimeStamp($seed->ranOn)->toDateTimeString();
-                    echo "| $ranOnAsDateTimeString $seed->class \n";
+                    echo "| $ranOnAsDateTimeString $seed->class " . PHP_EOL;
                 }
             } else {
-                echo "| No $groupName seeds have been run against this database. \n";
+                echo "| No $groupName seeds have been run against this database. " . PHP_EOL;
             }
-            echo "| \n";
+            echo "| " . PHP_EOL;
         }
-        echo "\ - - - - - - - - - - - - - - - - - - - - - - - - -\n";
-        echo "\n";
+        echo "\ - - - - - - - - - - - - - - - - - - - - - - - - -" . PHP_EOL;
+        echo "" . PHP_EOL;
         
 
     }
@@ -328,16 +330,16 @@ class Lightswitch
                 $className = $this->getClassNameFromFilePath($file);
                 $migrationTimestamp = $this->getTimestampFromClassName($className);
 
-                echo "Running migration $className. \n";
+                echo "Running migration $className. " . PHP_EOL;
 //                require_once($file);
 //                $obj = new $className;
 //                $obj->run($this->db);
-                echo "Migration $className completed. \n";
+                echo "Migration $className completed. " . PHP_EOL;
 
                 $thisMigrationFailed = false;
             } catch (\Exception $exc) {
-                echo "Migration $className failed. \n";
-                echo $exc->getTraceAsString()."\n";
+                echo "Migration $className failed. " . PHP_EOL;
+                echo $exc->getTraceAsString()."" . PHP_EOL;
                 break;
             } finally {
                 if ($thisMigrationFailed) { return; }
@@ -364,16 +366,16 @@ class Lightswitch
                 $className = $this->getClassNameFromFilePath($file);
                 $seedTimestamp = $this->getTimestampFromClassName($className);
 
-                echo "Running seed $className. \n";
+                echo "Running seed $className. " . PHP_EOL;
 //                require_once($file);
 //                $obj = new $className;
 //                $obj->run($this->db);
-                echo "Seed $className completed. \n";
+                echo "Seed $className completed. " . PHP_EOL;
 
                 $thisSeedFailed = false;
             } catch (\Exception $exc) {
-                echo "Seed $className failed. \n";
-                echo $exc->getTraceAsString()."\n";
+                echo "Seed $className failed. " . PHP_EOL;
+                echo $exc->getTraceAsString()."" . PHP_EOL;
                 break;
             } finally {
                 if ($thisSeedFailed) { return; }

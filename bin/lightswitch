@@ -1,5 +1,31 @@
 #!/usr/bin/env php
 <?php
 
-echo "lightswitch was here again yo yo yah \n";
-// comment....
+
+$autoloadPaths = array(
+    realpath(__DIR__ . '/../../autoload.php'),
+    realpath(__DIR__ . '/../vendor/autoload.php'),
+    realpath(__DIR__ . '/vendor/autoload.php')
+);
+
+foreach ($autoloadPaths as $autoloadPath) {
+    if (file_exists($autoloadPath)) {
+        define('AUTOLOAD_PATH', $autoloadPath);
+        break;
+    }
+}
+unset($autoloadPath);
+
+if (!defined('AUTOLOAD_PATH')) {
+    fwrite(STDERR,
+        'You need to set up the project dependencies using the following commands:' . PHP_EOL .
+        'wget http://getcomposer.org/composer.phar' . PHP_EOL .
+        'php composer.phar install' . PHP_EOL
+    );
+    die(1);
+}
+require AUTOLOAD_PATH;
+
+
+$lightswitch = new \Cravelight\Lightswitch($app->db, $argv);
+$lightswitch->exec();
