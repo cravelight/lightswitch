@@ -1,19 +1,14 @@
 #!/usr/bin/env php
 <?php
 
-echo "this is in:" . realpath(__DIR__) . PHP_EOL;
+$bin = dirname(__FILE__);
+$lightswitch = dirname($bin);
+$cravelight = dirname($lightswitch);
+$vendor = dirname($cravelight);
+$autoloadPath = realpath($vendor) . '/autoload.php';
 
-$autoloadPaths = array(
-    realpath(__DIR__ . '/../../vendor/autoload.php'),
-    realpath(__DIR__ . '/../vendor/autoload.php'),
-    realpath(__DIR__ . '/vendor/autoload.php')
-);
-
-foreach ($autoloadPaths as $autoloadPath) {
-    if (file_exists($autoloadPath)) {
-        define('AUTOLOAD_PATH', $autoloadPath);
-        break;
-    }
+if (file_exists($autoloadPath)) {
+    define('AUTOLOAD_PATH', $autoloadPath);
 }
 unset($autoloadPath);
 
