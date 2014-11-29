@@ -1,6 +1,7 @@
 #!/usr/bin/env php
 <?php
 
+echo "this is in:" . realpath(__DIR__) . PHP_EOL;
 
 $autoloadPaths = array(
     realpath(__DIR__ . '/../../vendor/autoload.php'),
